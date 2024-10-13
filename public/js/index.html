@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 및 회원가입</title>
+    <link rel="stylesheet" href="styles.css"> <!-- 스타일시트 추가 -->
+</head>
+<body>
+    <h1>로그인 또는 회원가입</h1>
+    
+    <div id="auth-form">
+        <input type="text" id="login-username" placeholder="아이디" required>
+        <input type="password" id="login-password" placeholder="비밀번호" required>
+        
+        <div id="signup-extra-fields" style="display:none;">
+            <input type="password" id="signup-confirm-password" placeholder="비밀번호 확인" required>
+        </div>
+
+        <button id="login-button">로그인</button>
+        <button id="toggle-signup-button">회원가입</button>
+    </div>
+
+    <script src="home.js"></script> <!-- home.js 파일 로드 -->
+</body>
+</html>
