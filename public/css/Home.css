@@ -1,0 +1,85 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh; /* 화면 높이로 설정 */
+    overflow: hidden; /* 스크롤바를 숨깁니다 */
+    background-image: url('../img/background.jpg');
+    background-size: cover; /* 배경 이미지가 화면에 꽉 차도록 설정 */
+    background-position: center; /* 배경 이미지 중앙 정렬 */
+    background-repeat: no-repeat; /* 배경 이미지 반복하지 않도록 설정 */
+    position: relative; /* 자식 요소의 절대 위치 설정을 위한 기준 */
+}
+
+h1 {
+    position: absolute; /* 절대 위치 설정 */
+    top: -5%; /* 화면 상단에서 -5% 위치 */
+    left: 50%; /* 수평 중앙 */
+    transform: translateX(-50%); /* 수평 중앙 정렬 */
+    font-size: 10em; /* 글꼴 크기 */
+    color: #333; /* 기본 글자 색상 */
+    text-align: center; /* 가운데 정렬 */
+
+    /* 네온 효과를 위한 여러 개의 text-shadow 사용 */
+    text-shadow:
+            0 0 5px rgba(105, 105, 105, 0.7), /* 검은색 빛 */
+            0 0 10px rgba(105, 105, 105, 0.5), /* 더 부드러운 검은색 빛 */
+            0 0 15px rgba(105, 105, 105, 0.3), /* 더 흐릿한 검은색 빛 */
+            0 0 20px rgba(255, 255, 255), /* 흰색 빛 */
+            0 0 30px rgba(255, 255, 255), /* 흰색 빛 */
+            0 0 50px rgba(255, 255, 255); /* 흰색 빛 */
+}
+
+/* 폼 컨테이너 스타일링 */
+.form-container {
+    position: absolute; /* 절대 위치 설정 */
+    bottom: 10%; /* 화면 하단에서 10% 위치 */
+    left: 50%; /* 수평 중앙 */
+    transform: translateX(-50%); /* 수평 중앙 정렬 */
+    max-width: 300px; /* 최대 너비 설정 */
+    padding: 1em; /* 내부 여백 설정 */
+    border: 1px solid #ccc; /* 테두리 설정 */
+    border-radius: 1em; /* 테두리 둥글게 설정 */
+    background-color: white; /* 하얀색 배경 */
+    opacity: 0.9; /* 약간 투명도 설정 (옵션) */
+}
+
+/* 버튼을 감싸는 컨테이너 스타일링 */
+.button-container {
+    display: flex; /* 플렉스 박스 활성화 */
+    justify-content: space-between; /* 버튼 사이에 공간 분배 */
+}
+
+/* 폼 컨테이너 내의 h2 요소 스타일링 */
+.form-container h2 {
+    text-align: center; /* 가운데 정렬 */
+}
+
+/* 폼 컨테이너 내의 input 요소 스타일링 */
+.form-container input {
+    width: calc(100% - 1em); /* 너비를 100%에서 약간 줄임 (여백 추가) */
+    padding: 0.5em; /* 내부 여백 설정 */
+    margin: 0.5em 0; /* 위아래 마진 설정 */
+    margin-left: 0.5em;
+    margin-right: 0; /* 오른쪽 여백 제거 */
+    box-sizing: border-box; /* 패딩과 보더를 포함한 박스 크기 설정 */
+    border: 1px solid #ccc; /* 테두리 추가 */
+    border-radius: 0.5em; /* 테두리 둥글게 설정 */
+}
+
+/* 폼 컨테이너 내의 button 요소 스타일링 */
+.form-container button {
+    flex: 1; /* 버튼이 가능한 너비를 차지하도록 설정 */
+    padding: 0.5em; /* 내부 여백 설정 */
+    background-color: #000000; /* 배경색 설정 */
+    color: white; /* 텍스트 색상 설정 */
+    border: none; /* 테두리 제거 */
+    border-radius: 0.5em; /* 테두리 둥글게 설정 */
+    cursor: pointer; /* 포인터 커서 설정 */
+    margin: 0 0.5em; /* 좌우 여백 추가 */
+    margin-top: 1em; /* 버튼 위쪽 마진 추가 */
+}
+
+/* 폼 컨테이너 내의 button 요소에 마우스를 올렸을 때 스타일링 */
+.form-container button:hover {
+    background-color: #828282; /* 마우스 오버 시 배경색 변경 */
+}

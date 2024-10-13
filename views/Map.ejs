@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Map Page</title>
+    <!-- Naver Maps API를 로드 -->
+    <script type="text/javascript"
+        src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=2j5bpft4t3&submodules=geocoder"></script>
+    <link rel="stylesheet" href="/css/Map.css"> <!-- 스타일 시트 연결 -->
+    <script src="/js/Map.js" defer></script> <!-- 외부 JS 파일 연결 -->
+</head>
+
+<body>
+    <!-- 사이드바 토글 버튼 -->
+    <button class="toggle-button" id="toggleButton" onclick="toggleSidebar()" style="top: 20px; left: 20px;">☰</button>
+    <!-- 확장 사이드바 토글 버튼 -->
+    <button class="toggle-button" id="toggleExtendedButton" onclick="toggleExtendedSidebar()"
+        style="top: 20px; right: 20px;">☰</button>
+
+    <!-- 기본 사이드바 -->
+    <div class="sidebar" id="sidebar" style="display: none;">
+        <button class="close-button" onclick="toggleSidebar()">×</button>
+        <h2>기능</h2>
+        <div id="functionContainer">
+            <ul>
+                <li class="sidebar-element" onclick="showTravelInfo()">여행 정보 등록</li>
+                <li class="sidebar-element" onclick="showRecommendedTravelInfo()">여행 정보 추천</li>
+                <li class="sidebar-element" onclick="showUserInfo()">사용자 정보</li>
+            </ul>
+        </div>
+        <!-- 검색 컨테이너 -->
+        <div class="search-container" id="searchContainer" style="display: none;">
+            <button onclick="goBack()" style="margin-bottom: 10px;">뒤로가기</button>
+            <div class="search-input-container">
+                <input type="text" id="searchInput" placeholder="검색어를 입력하세요..." style="width: calc(100% - 100px);">
+                <button onclick="searchLocations()" style="width: 100px;">검색</button>
+            </div>
+            <hr style="margin: 10px 0; border: 1px solid #ccc;">
+            <div id="searchResults" class="results-container"></div> <!-- 검색 결과 표시 영역 -->
+        </div>
+        <button class="logout-button" onclick="logout()" style="margin-top: auto;">🚪 로그아웃</button>
+    </div>
+
+    <!-- 확장된 사이드바 -->
+    <div class="extended-sidebar" id="extendedSidebar" style="display: none;">
+        <button class="close-button" onclick="toggleExtendedSidebar()">×</button>
+        <h2>등록된 정보</h2>
+        <button onclick="toggleMarkersAndRoute()">마커와 경로 토글</button>
+        <hr style="margin: 10px 0; border: 1px solid #ccc;">
+        <div id="registeredInfoContainer" class="results-container"></div> <!-- 등록된 정보 표시 영역 -->
+        <input type="text" id="infoTitleInput" placeholder="제목을 입력하세요..." style="margin: 10px 0; width: 100%;">
+        <textarea id="infoDetailsInput" placeholder="세부 정보를 입력하세요..."
+            style="margin: 10px 0; width: 100%; height: 100px;"></textarea>
+        <button onclick="saveRegisteredInfo()" style="margin-top: 10px;">저장</button>
+    </div>
+
+    <!-- 지도 영역 -->
+    <div id="map" style="width:100%;height:100%;"></div>
+
+    <script>
+        function reset() {
+            // 모든 마커 제거
+            markers.forEach(marker => marker.setMap(null));
+            markers = []; // 마커 배열 초기화
+
+            // 폴리라인 제거
+            polyline.setPath([]); // 폴리라인 경로 초기화
+            polyline.setMap(null); // 폴리라인 숨기기
+            polylineVisible = false; // 가시성 상태 초기화
+
+            // 지도 초기 위치 및 줌 레벨 설정
+            map.setCenter(new naver.maps.LatLng(37.3595704, 127.105399)); // 초기 위치로 재설정
+            map.setZoom(10); // 초기 줌 레벨로 재설정
+        }
+
+        // 마커 추가 함수
+        function addMarker(latitude, longitude, title, thirdInfo, sixthInfo) {
+            const marker = new naver.maps.Marker({
+                position: new naver.maps.LatLng(latitude, longitude),
+                map: map, // 지도에 마커 추가
+                title: title // 마커 제목 설정
+            });
+
+            // 클릭 이벤트 추가
+            naver.maps.Event.addListener(marker, 'click', function () {
+                infoWindow.setContent(`<div style="text-align:center;">${title}</div>`);
+                infoWindow.open(map, marker.getPosition());
+            });
+
+            // 마우스 오버 이벤트 추가
+            naver.maps.Event.addListener(marker, 'mouseover', function () {
+                infoWindow.setContent(`
+            <div style="text-align:left;">
+                <strong style="font-size: 1.2em;">${title}</strong><br>
+                <span style="font-size: 0.9em;">${thirdInfo}</span><br>
+                <span style="font-size: 0.9em;">${sixthInfo}</span>
+            </div>
+        `);
+                infoWindow.open(map, marker.getPosition());
+            });
+
+            // 마우스 아웃 이벤트 추가
+            naver.maps.Event.addListener(marker, 'mouseout', function () {
+                infoWindow.close(); // 마우스 아웃 시 알림창 닫기
+            });
+
+            markers.push(marker); // 배열에 마커 추가
+        }
+
+        // 폴리라인에 마커 경로 추가 함수
+        function addPolylinePath(latitude, longitude) {
+            const position = new naver.maps.LatLng(latitude, longitude);
+            polyline.getPath().push(position); // 폴리라인 경로에 위치 추가
+            polyline.setMap(map); // 폴리라인을 지도에 표시
+        }
+
+        // 추천 여행 정보 표시 함수
+        function showRecommendedTravelInfo() {
+            // 모든 요소 비활성화
+            document.getElementById('functionContainer').style.display = 'none';
+            document.getElementById('searchContainer').style.display = 'block'; // 검색 컨테이너 보여주기
+
+            // 검색 버튼과 검색 텍스트 입력 상자를 숨김
+            document.getElementById('searchInput').style.display = 'none'; // 검색 텍스트 입력 상자 숨김
+            const searchButton = document.querySelector('.search-input-container button');
+            if (searchButton) {
+                searchButton.style.display = 'none'; // 검색 버튼 숨김
+            }
+
+            const resultsContainer = document.getElementById('searchResults');
+            // 검색 결과 영역 초기화
+            resultsContainer.innerHTML = '';
+
+            // Ajax 요청을 통해 데이터를 가져온다고 가정
+            fetch('/registered_info')
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(item => {
+                        // 데이터 항목을 보여주는 HTML 생성
+                        const resultItem = document.createElement('div');
+                        resultItem.classList.add('result-item');
+
+                        // detail이 3줄을 초과하면 잘라주는 함수
+                        const truncatedDetail = truncateDetail(item.detail);
+
+                        resultItem.innerHTML = `
+                    <h3>${item.title}</h3>
+                    <p>${truncatedDetail}</p>
+                `;
+
+                        // 클릭 시 마커 및 폴리라인 추가
+                        resultItem.onclick = function () {
+                            // 이전 마커 및 폴리라인 초기화
+                            reset();
+                            const sections = item.info.split('@@');
+
+                            let message = ''; // 알림창에 표시할 메시지
+
+                            sections.forEach(section => {
+                                const details = section.split('##');
+                                if (details.length >= 5) { // 네 번째와 다섯 번째 요소가 있는지 확인
+                                    const latitude = parseFloat(details[4]) / 10000000; // 다섯 번째 요소 (경도) 가공
+                                    const longitude = parseFloat(details[3]) / 10000000; // 네 번째 요소 (위도) 가공
+
+                                    // 마커와 폴리라인 추가
+                                    addMarker(latitude, longitude, details[0], details[2], details[5]); // 제목으로 마커에 레이블 추가
+                                    addPolylinePath(latitude, longitude); // 폴리라인 경로에 위치 추가
+
+                                    // 알림창 메시지에 위치 정보 추가
+                                    message += `제목: ${details[0]}\n위도: ${latitude}\n경도: ${longitude}\n\n`;
+                                }
+                            });
+
+                            // 위치 정보를 알림창으로 표시
+                            alert(message || '위치 정보가 없습니다.');
+                        };
+
+                        resultsContainer.appendChild(resultItem);
+                    });
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        // detail을 잘라주는 함수
+        function truncateDetail(detail) {
+            const lines = detail.split('\n'); // 줄바꿈 기준으로 나누기
+            if (lines.length > 3) {
+                return lines.slice(0, 3).join('\n') + '...'; // 3줄 초과 시 '...' 추가
+            }
+            return detail; // 3줄 이내는 그대로 반환
+        }
+
+        // 추가적인 사이드바 열기 및 닫기
+        function toggleExtendedSidebar() {
+            const extendedSidebar = document.getElementById('extendedSidebar');
+            const isVisible = extendedSidebar.style.display === 'block'; // 현재 보이는지 여부 확인
+
+            if (isVisible) {
+                extendedSidebar.style.display = 'none'; // 보이면 숨김
+            } else {
+                extendedSidebar.style.display = 'block'; // 보이지 않으면 보여줌
+            }
+        }
+    </script>
+</body>
+
+</html>
